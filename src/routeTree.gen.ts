@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TranscricoesRouteImport } from './routes/transcricoes'
 import { Route as TarefasRouteImport } from './routes/tarefas'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientesClientIdRouteImport } from './routes/clientes.$clientId'
 
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TranscricoesRoute = TranscricoesRouteImport.update({
   id: '/transcricoes',
   path: '/transcricoes',
@@ -24,6 +31,11 @@ const TranscricoesRoute = TranscricoesRouteImport.update({
 const TarefasRoute = TarefasRouteImport.update({
   id: '/tarefas',
   path: '/tarefas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -51,16 +63,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/clientes': typeof ClientesRouteWithChildren
   '/configuracoes': typeof ConfiguracoesRoute
+  '/login': typeof LoginRoute
   '/tarefas': typeof TarefasRoute
   '/transcricoes': typeof TranscricoesRoute
+  '/usuarios': typeof UsuariosRoute
   '/clientes/$clientId': typeof ClientesClientIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/clientes': typeof ClientesRouteWithChildren
   '/configuracoes': typeof ConfiguracoesRoute
+  '/login': typeof LoginRoute
   '/tarefas': typeof TarefasRoute
   '/transcricoes': typeof TranscricoesRoute
+  '/usuarios': typeof UsuariosRoute
   '/clientes/$clientId': typeof ClientesClientIdRoute
 }
 export interface FileRoutesById {
@@ -68,8 +84,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/clientes': typeof ClientesRouteWithChildren
   '/configuracoes': typeof ConfiguracoesRoute
+  '/login': typeof LoginRoute
   '/tarefas': typeof TarefasRoute
   '/transcricoes': typeof TranscricoesRoute
+  '/usuarios': typeof UsuariosRoute
   '/clientes/$clientId': typeof ClientesClientIdRoute
 }
 export interface FileRouteTypes {
@@ -78,24 +96,30 @@ export interface FileRouteTypes {
     | '/'
     | '/clientes'
     | '/configuracoes'
+    | '/login'
     | '/tarefas'
     | '/transcricoes'
+    | '/usuarios'
     | '/clientes/$clientId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/clientes'
     | '/configuracoes'
+    | '/login'
     | '/tarefas'
     | '/transcricoes'
+    | '/usuarios'
     | '/clientes/$clientId'
   id:
     | '__root__'
     | '/'
     | '/clientes'
     | '/configuracoes'
+    | '/login'
     | '/tarefas'
     | '/transcricoes'
+    | '/usuarios'
     | '/clientes/$clientId'
   fileRoutesById: FileRoutesById
 }
@@ -103,12 +127,21 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClientesRoute: typeof ClientesRouteWithChildren
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  LoginRoute: typeof LoginRoute
   TarefasRoute: typeof TarefasRoute
   TranscricoesRoute: typeof TranscricoesRoute
+  UsuariosRoute: typeof UsuariosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transcricoes': {
       id: '/transcricoes'
       path: '/transcricoes'
@@ -121,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/tarefas'
       fullPath: '/tarefas'
       preLoaderRoute: typeof TarefasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -170,8 +210,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClientesRoute: ClientesRouteWithChildren,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  LoginRoute: LoginRoute,
   TarefasRoute: TarefasRoute,
   TranscricoesRoute: TranscricoesRoute,
+  UsuariosRoute: UsuariosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

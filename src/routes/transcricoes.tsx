@@ -1,139 +1,243 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, Wand2, Calendar, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { Bot, Sparkles, Building2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { NewClientModal } from '@/components/NewClientModal';
 
-export const Route = createFileRoute("/transcricoes")({
-  head: () => ({
-    meta: [
-      { title: "Transcrições · Client Cards AI" },
-      { name: "description", content: "Cole uma transcrição e gere o card do cliente." },
-    ],
-  }),
-  component: TranscriptionPage,
+export const Route = createFileRoute('/transcricoes')({
+  component: TranscricoesPage,
 });
 
-function TranscriptionPage() {
-  const [name, setName] = useState("");
-  const [company, setCompany] = useState("");
-  const [text, setText] = useState("");
+function TranscricoesPage() {
+  const [transcricao, setTranscricao] = useState('');
+  const [selectedClienteId, setSelectedClienteId] = useState<string>('');
+  const [resultado, setResultado] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [erroValidacao, setErroValidacao] = useState('');
+
+  // Busca lista atualizada de clientes no Oracle
+  const { data: clientes = [], isLoading: loadingClientes } = useQuery({
+    queryKey: ['clientes'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:8080/api/clientes');
+      if (!res.ok) throw new Error('Falha ao carregar clientes');
+      return res.json();
+    },
+  });
+
+  const enviarParaJava = async () => {
+    setErroValidacao('');
+    
+    if (!selectedClienteId) {
+      setErroValidacao('Selecione ou cadastre uma empresa antes de executar o diagnóstico.');
+      return;
+    }
+
+    if (!transcricao.trim()) {
+      setErroValidacao('Cole o texto da transcrição para análise.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8080/api/analise/processar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          texto: transcricao,
+          idCliente: Number(selectedClienteId) 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Erro na resposta do backend');
+
+      const data = await response.json();
+      setResultado(data);
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Falha ao comunicar com o servidor Spring Boot (8080).');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-10">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Nova transcrição</h1>
-        <p className="text-sm text-muted-foreground">
-          Cole o conteúdo da reunião. A IA irá extrair as informações essenciais e gerar o card do cliente.
-        </p>
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-5">
-        {/* Form */}
-        <div className="lg:col-span-3 space-y-5 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome do cliente</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Mariana Costa" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="company">Empresa / projeto</Label>
-              <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Ex.: Nova Health" />
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="transcript">Transcrição da reunião</Label>
-            <Textarea
-              id="transcript"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={14}
-              placeholder="Cole aqui a transcrição completa da sua reunião..."
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground">
-              {text.length.toLocaleString("pt-BR")} caracteres · sem limite recomendado
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-accent/40 p-3.5 text-sm text-accent-foreground">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>
-              A IA identifica automaticamente <strong>necessidades</strong>, <strong>dores</strong>,{" "}
-              <strong>objetivos</strong> e <strong>próximos passos</strong> a partir da transcrição.
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost">Limpar</Button>
-            <Button className="gap-2">
-              <Wand2 className="h-4 w-4" />
-              Gerar card do cliente
-            </Button>
-          </div>
+    <div className="mx-auto max-w-6xl p-8 space-y-8 animate-in fade-in duration-300">
+      <header className="border-b border-border pb-6">
+        <div className="inline-flex items-center gap-2 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#0066ff] mb-3 border border-blue-100">
+          <Sparkles className="h-3.5 w-3.5" />
+          IA Generativa Comercial · Qwen 2.5
         </div>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          Diagnóstico de Reunião por Empresa
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Vincule a transcrição à conta corporativa para gravação na base Oracle (T_TRANSCRICAO) e geração de recomendações autônomas.
+        </p>
+      </header>
 
-        {/* Preview */}
-        <div className="lg:col-span-2">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Preview do card
-          </p>
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-display text-base font-semibold">
-                  {name || "Nome do cliente"}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {company || "Empresa / projeto"}
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Formulário de Envio */}
+        <section className="lg:col-span-7 space-y-5">
+          
+          {/* Seletor e Validador de Empresa */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Building2 className="h-4 w-4 text-[#0066ff]" />
+                Empresa Participante
+              </label>
+              <NewClientModal trigger={
+                <button type="button" className="text-xs font-semibold text-[#0066ff] hover:underline">
+                  + Cadastrar Nova Conta
+                </button>
+              } />
+            </div>
+
+            <select
+              value={selectedClienteId}
+              onChange={(e) => {
+                setSelectedClienteId(e.target.value);
+                setErroValidacao('');
+              }}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-sm focus:border-[#0066ff] focus:outline-none focus:ring-1 focus:ring-[#0066ff]"
+            >
+              <option value="">-- Selecione a empresa no banco de dados --</option>
+              {clientes.map((c: any) => (
+                <option key={c.idCliente} value={c.idCliente}>
+                  {c.razaoSocial} (CNPJ: {c.cnpj} | {c.email || 'Sem e-mail'})
+                </option>
+              ))}
+            </select>
+
+            {clientes.length === 0 && !loadingClientes && (
+              <p className="text-xs text-amber-600">
+                Nenhuma empresa cadastrada. Use o botão acima para adicionar a primeira conta no banco.
+              </p>
+            )}
+          </div>
+
+          {/* Área de Transcrição */}
+          <div className="rounded-xl border border-border bg-card shadow-sm p-4 focus-within:ring-2 focus-within:ring-[#0066ff] transition-all">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Texto da Reunião
+            </label>
+            <textarea
+              className="w-full h-80 bg-transparent border-0 resize-none focus:outline-none text-sm text-foreground placeholder:text-muted-foreground leading-relaxed"
+              placeholder="Cole o diálogo da reunião aqui..."
+              value={transcricao}
+              onChange={(e) => {
+                setTranscricao(e.target.value);
+                setErroValidacao('');
+              }}
+            />
+          </div>
+
+          {erroValidacao && (
+            <div className="flex items-center gap-2 text-xs font-semibold text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {erroValidacao}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">{transcricao.length} caracteres</span>
+            <button
+              onClick={enviarParaJava}
+              disabled={loading || !transcricao.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0066ff] px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0052cc] disabled:opacity-50 transition-colors"
+            >
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Gravando no Oracle & Analisando IA...
+                </>
+              ) : (
+                <>
+                  <Bot className="h-4 w-4" />
+                  Salvar e Executar Diagnóstico
+                </>
+              )}
+            </button>
+          </div>
+        </section>
+
+        {/* Resultados */}
+        <aside className="lg:col-span-5">
+          {resultado ? (
+            <div className="rounded-xl border border-border bg-card shadow-md p-6 space-y-6 animate-in zoom-in-95 duration-200">
+              <div className="border-b border-border pb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Solução Recomendada
+                </span>
+                <div className="mt-1 flex items-baseline justify-between">
+                  <h2 className="text-2xl font-bold font-display text-[#0066ff]">
+                    {resultado.produtoRecomendado}
+                  </h2>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                    <CheckCircle2 className="h-3 w-3" /> Gravado no Oracle
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    Oportunidade
+                  </span>
+                  <span className="mt-1 inline-block font-semibold text-sm text-slate-800">
+                    {resultado.oportunidadeUpsell}
+                  </span>
+                </div>
+
+                <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    Risco de Churn
+                  </span>
+                  <span className={`mt-1 inline-block text-xs font-bold px-2 py-0.5 rounded ${
+                    resultado.riscoChurn === 'ALTO' 
+                      ? 'bg-red-100 text-red-700' 
+                      : resultado.riscoChurn === 'MEDIO' 
+                      ? 'bg-amber-100 text-amber-800' 
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {resultado.riscoChurn}
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  Orçamento Mapeado
+                </span>
+                <p className="mt-1 text-xl font-bold font-mono text-slate-900">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultado.orcamentoEstimado || 0)}
                 </p>
               </div>
-              <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
-                Novo
-              </span>
-            </div>
 
-            <p className="mt-4 text-sm text-muted-foreground">
-              {text
-                ? text.slice(0, 140) + (text.length > 140 ? "..." : "")
-                : "O resumo gerado pela IA aparecerá aqui assim que você colar a transcrição."}
-            </p>
-
-            <div className="mt-4 space-y-2 text-sm">
-              <PreviewRow label="Necessidades" placeholder="Identificadas automaticamente" />
-              <PreviewRow label="Dores" placeholder="Identificadas automaticamente" />
-              <PreviewRow label="Próximo passo" placeholder="Sugerido pela IA" />
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              <Badge variant="secondary" className="rounded-full">Follow-up</Badge>
-              <Badge variant="secondary" className="rounded-full">Venda</Badge>
-            </div>
-
-            <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                Hoje
+              <div className="space-y-2 pt-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Diagnóstico Técnico
+                </span>
+                <p className="text-sm text-slate-600 leading-relaxed bg-white border border-slate-200 rounded-lg p-3">
+                  {resultado.raciocinio}
+                </p>
               </div>
-              <Button size="sm" variant="ghost" className="gap-1">
-                Ver detalhes <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PreviewRow({ label, placeholder }: { label: string; placeholder: string }) {
-  return (
-    <div className="flex gap-2">
-      <span className="w-24 shrink-0 text-xs uppercase tracking-wide text-muted-foreground/80">{label}</span>
-      <span className="line-clamp-1 flex-1 text-sm text-muted-foreground">{placeholder}</span>
+          ) : (
+            <div className="h-full min-h-[420px] rounded-xl border border-dashed border-slate-300 bg-slate-50/50 flex flex-col items-center justify-center p-8 text-center">
+              <div className="h-12 w-12 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center mb-3">
+                <Bot className="h-6 w-6" />
+              </div>
+              <h3 className="font-display text-sm font-semibold text-foreground">Aguardando Execução</h3>
+              <p className="mt-1 max-w-xs text-xs text-muted-foreground leading-relaxed">
+                Selecione a empresa vinculada e submeta a transcrição para persistência imediata na base e processamento pelo agente.
+              </p>
+            </div>
+          )}
+        </aside>
+      </main>
     </div>
   );
 }

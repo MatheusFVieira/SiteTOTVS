@@ -75,16 +75,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Client Cards AI — Gestão inteligente de clientes" },
+      { title: "TOTVS Meeting Insights" },
       {
         name: "description",
         content:
-          "Transforme reuniões em cards organizados com informações essenciais sobre cada cliente.",
+          "Transforme reuniões em inteligência comercial com o ecossistema TOTVS.",
       },
-      { property: "og:title", content: "Client Cards AI" },
+      { property: "og:title", content: "TOTVS Meeting Insights" },
       {
         property: "og:description",
-        content: "Gestão inteligente de clientes a partir de transcrições de reuniões.",
+        content: "Gestão inteligente comercial e mitigação de churn com IA.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -116,22 +116,24 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-background">
+        <div className="flex h-screen w-screen overflow-hidden bg-background">
+          {/* Sidebar lateral fixa */}
           <AppSidebar />
-          <div className="flex flex-1 flex-col">
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md">
+
+          {/* Área principal com header limpo */}
+          <div className="flex flex-1 flex-col h-screen overflow-hidden">
+            <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md">
               <SidebarTrigger className="h-8 w-8" />
-              <div className="ml-1 text-sm text-muted-foreground">
-                Workspace · <span className="text-foreground">Acme Studio</span>
-              </div>
             </header>
-            <main className="flex-1">
+            
+            {/* Scroll do conteúdo */}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
               <Outlet />
             </main>
           </div>
         </div>
-          <Toaster />
-        </SidebarProvider>
+        <Toaster />
+      </SidebarProvider>
     </QueryClientProvider>
   );
 }

@@ -1,88 +1,47 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Calendar, Pencil } from "lucide-react";
+import { ArrowUpRight, Building2, Pencil, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { type Client, statusStyles, tagStyles } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-  });
-}
-
-export function ClientCard({ client }: { client: Client }) {
+export function ClientCard({ client }: { client: any }) {
   return (
-    <div className="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-base font-semibold text-foreground">
-            {client.name}
-          </h3>
-          <p className="truncate text-sm text-muted-foreground">{client.company}</p>
+    <div className="group flex flex-col justify-between rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-blue-200 hover:shadow-md">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0066ff]">
+              {client.segmento || "Geral"}
+            </span>
+            <h3 className="truncate font-display text-base font-bold text-foreground mt-0.5">
+              {client.razaoSocial}
+            </h3>
+            <p className="truncate text-xs font-mono text-muted-foreground mt-0.5">
+              CNPJ: {client.cnpj}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700">
+            ID #{client.idCliente}
+          </span>
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium",
-            statusStyles[client.status],
-          )}
-        >
-          {client.status}
-        </span>
+
+        <p className="text-xs leading-relaxed text-slate-500 bg-slate-50 border border-slate-100 rounded-lg p-3">
+          Conta comercial vinculada. Análises de IA realizadas nesta conta são atribuídas automaticamente ao executivo de contas responsável.
+        </p>
       </div>
 
-      <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-        {client.summary}
-      </p>
-
-      <div className="mt-4 space-y-2.5 text-sm">
-        <Row label="Necessidades" value={client.needs[0]} />
-        <Row label="Dores" value={client.pains[0]} />
-        <Row label="Próximo passo" value={client.nextSteps[0]} />
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {client.tags.map((tag) => (
-          <Badge
-            key={tag}
-            variant="secondary"
-            className={cn("rounded-full border-0 px-2.5 py-0.5 text-xs font-medium", tagStyles[tag])}
-          >
-            {tag}
-          </Badge>
-        ))}
-      </div>
-
-      <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5" />
-          {formatDate(client.lastMeeting)}
+      <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs">
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span>Vendedor Resp.: <strong className="text-foreground">{client.idVendedor}</strong></span>
         </div>
-        <div className="flex gap-1.5">
-          <Button variant="ghost" size="sm" className="h-8 gap-1">
-            <Pencil className="h-3.5 w-3.5" />
-            Editar
-          </Button>
-          <Button asChild size="sm" className="h-8 gap-1">
-            <Link to="/clientes/$clientId" params={{ clientId: client.id }}>
-              Ver detalhes
+        <div className="flex items-center gap-1">
+          <Button asChild size="sm" variant="ghost" className="h-8 gap-1 text-[#0066ff] hover:bg-blue-50 font-medium">
+            <Link to="/clientes/$clientId" params={{ clientId: String(client.idCliente) }}>
+              Detalhes
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-2">
-      <span className="w-24 shrink-0 text-xs uppercase tracking-wide text-muted-foreground/80">
-        {label}
-      </span>
-      <span className="line-clamp-1 flex-1 text-sm text-foreground">{value}</span>
     </div>
   );
 }
