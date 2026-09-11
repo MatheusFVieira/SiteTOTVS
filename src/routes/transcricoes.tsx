@@ -73,7 +73,7 @@ function TranscricoesPage() {
           Diagnóstico de Reunião por Empresa
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Vincule a transcrição à conta corporativa para gravação na base Oracle (T_TRANSCRICAO) e geração de recomendações autônomas.
+          Vincule a transcrição à conta corporativa para gravação e geração de recomendações autônomas.
         </p>
       </header>
 

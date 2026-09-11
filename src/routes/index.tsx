@@ -74,7 +74,7 @@ function DashboardPage() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 rounded-md bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
             <Sparkles className="h-3.5 w-3.5" />
-            Ecossistema TOTVS · Inteligência Comercial Autônoma
+            Ecossistema TOTVS · Inteligência Conversacional Autônoma
           </div>
 
           <h1 className="font-display text-4xl font-bold tracking-tight">
@@ -82,7 +82,7 @@ function DashboardPage() {
           </h1>
 
           <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
-            Diagnóstico de reuniões comerciais com extração autônoma de gaps operacionais, riscos de churn e direcionamento de soluções especializadas (RM, Protheus, Fluig e Logix).
+            Diagnóstico de reuniões comerciais com extração autônoma de gaps operacionais, riscos de churn e direcionamento de soluções especializadas.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">

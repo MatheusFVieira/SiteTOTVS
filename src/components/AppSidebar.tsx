@@ -57,10 +57,10 @@ export function AppSidebar() {
             </div>
             <div>
               <p className="font-display text-sm font-bold tracking-tight text-sidebar-foreground leading-none">
-                TOTVS Insights
+                TOTVS
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5">
-                Meeting Agent
+                Meeting Insights
               </p>
             </div>
           </Link>
